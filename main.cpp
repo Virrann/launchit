@@ -4,23 +4,26 @@
 #include <filesystem>
 #include <cstdlib>
 
-#define PATHLAUNCHER "/home/$USER/.local/share/applications/"
-#define PATHSCRIPTS "../testes"
-
-
-#define NAME "WhatsApp"
-#define APP "/mnt/nvme/WhatsAppWeb-linux-x64/WhatsAppWeb"
-#define ICONTEST "/mnt/nvme/WhatsAppWeb-linux-x64/resources/app/icon.png"
-
-
 using namespace std;
 
-void createCommand(const string name, const string path, const string command){
+void permissions(const string path){
 
-    string scriptpath = path + "/" + name + ".sh";
-    ofstream scriptf;
+    string chmod = "chmod +x " + path;
 
-    scriptf.open(scriptpath);
+    if (std::system(chmod.c_str()) != 0) {
+        std::cerr << "Error turning script on executable" << std::endl;
+        return;
+    }
+}
+
+void createCommand(const string path, 
+                   const string name, 
+                   const string command){
+
+    filesystem::create_directories(path);
+
+    string scriptpath = path + name + ".sh";
+    ofstream scriptf(scriptpath);
 
     if (!scriptf){
         cerr << "error creating file " + scriptpath << endl;
@@ -31,29 +34,69 @@ void createCommand(const string name, const string path, const string command){
     scriptf << command << "\n";
     scriptf.close();
 
-    string chmod = "chmod +x " + scriptpath;
+    permissions(scriptpath);
+}
 
-    if (std::system(chmod.c_str()) != 0) {
-        std::cerr << "Error turning script on executable" << std::endl;
+void createLauncher(const string path,
+                    const string name, 
+                    const string exec, 
+                    const string icon){
+
+    string desktoppath = path + name + ".desktop";                   
+    ofstream desktopf(desktoppath);
+
+    if (!desktopf){
+        cerr << "error creating .desktop file " + desktoppath << endl;
         return;
     }
+
+    desktopf << "[Desktop Entry]\n";
+    desktopf << "Type=Application\n";
+    desktopf << "Name=" << name << "\n";
+    desktopf << "Exec=" << exec << "\n";
+    desktopf << "Icon=" << icon << "\n";
+    desktopf << "Terminal=false\n";
+    
+    desktopf.close();
+
+    permissions(desktoppath);  
 }
 
-void createLauncher(){
+int main(int argc, char const *argv[]){
 
-    string header = "[Desktop Entry]\n";
+    if (argc < 4 || argc > 5) {
+        cerr << "Erro: Número inválido de argumentos.\n";
+        cerr << "Usage: programName -a|-c <command> <name> <icon (opcional it needs to be svg image)>\n";
+        return 1;
+    }
 
-}
+    string pathlauncher = string(getenv("HOME")) + "/.local/share/applications/";
+    string pathscripts = "/mnt/nvme/MeuDir/launchercreator/testes/"; 
 
-int main(/*int argc, char const *argv[]*/){
-    /*
-    string name = "Name=";
-    string type = "Type=Application";
-    string exec = "EXEC=";
-    string icon = "Icon=";
+    cout << pathlauncher << endl;
 
-    /* code */
-    createCommand("name", PATHSCRIPTS, "flatpak run com.valvesoftware.Steam");
+
+
+    string mode = argv[1];
+    string exec = argv[2];
+    string name = argv[3];
+    string icon = (argc == 5) ? argv[4] : "utilities-terminal";
+    
+    if (mode == "-c"){
+        createCommand(pathscripts ,name, exec);
+        createLauncher(pathlauncher, name, pathscripts + name + ".sh", icon);
+    }
+
+    if (mode == "-a"){
+        createLauncher(pathlauncher, name, exec, icon);
+    }
+
+    else{
+        cerr << "invalid params\n";
+        cerr << "Usage: programName -a|-c <command> <name> <icon (opcional)>\n";
+        return 1;
+    }
+
 
     return 0;
 }
