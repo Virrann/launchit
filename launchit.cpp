@@ -85,8 +85,6 @@ int main(int argc, char const *argv[]){
     string pathlauncher = string(getenv("HOME")) + "/.local/share/applications/";
     string pathscripts = string(getenv("HOME")) + "/.local/share/launchit/";
 
-    cout << pathlauncher << endl;
-
 
 
     string mode = argv[1];
@@ -96,7 +94,7 @@ int main(int argc, char const *argv[]){
 
     if (mode != "-c" && mode != "-a"){
         cerr << "invalid params\n";
-        cerr << "Usage: programName -a|-c <command> <name> <icon (opcional)>\n";
+        cerr << "Usage: launchit -a|-c <command> <name> <icon (opcional)>\n";
         return 1;
     }
 
@@ -114,7 +112,6 @@ int main(int argc, char const *argv[]){
     else if (mode == "-a"){
         createLauncher(pathlauncher, name, exec, icon);
     }
-
 
     return 0;
 }
