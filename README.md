@@ -6,7 +6,7 @@
 launchit -a|-c <command> <name> <icon (opcional)>
 ```
 
--a: to create a launcher from a executable or appimage \
+-a: to create a launcher from a executable or appimage 
 
 -c: to create a launcher from a script or command
 
